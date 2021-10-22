@@ -1,9 +1,11 @@
 import socket
 import json
 
-mensagem = {'idTurma':'E58',
-            'tipo': 'professor',
-            'acao': 'fechar'}
+
+with open('./cliente-professor.json', 'r', encoding='utf8') as f:
+    mensagem = json.load(f)
+
+mensagem['tipo'] = 'professor'
 
 HOST = 'localhost'
 PORT = 50000
