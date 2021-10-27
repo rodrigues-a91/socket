@@ -1,6 +1,6 @@
 import socket
 import json
-from time import strftime, gmtime
+from datetime import datetime
 
 
 class Servidor:
@@ -45,6 +45,17 @@ class Servidor:
         if indexEncontrado != None:
             self.listaDeChamadas[indexEncontrado]['listaPresenca'].append(
                 data['matricula'])
+            self.listaDeChamadas[indexEncontrado]['listaPresenca'] = list(set(self.listaDeChamadas[indexEncontrado]['listaPresenca']))
+    
+    def getHoraAtual(self):
+        hora_atual = datetime.now()
+        hora_em_texto = '{}:{}'.format(hora_atual.hour, hora_atual.minute)
+        return hora_em_texto
+
+    def getDataAtual(self):
+        data_atual = datetime.now()
+        data_em_texto = data_atual.strftime('%d/%m/%Y')
+        return data_em_texto
 
     def requisicaoProfessor(self, data, conexao):
         chamadaExiste = self.verificarExistenciaDaChamada(
@@ -59,17 +70,19 @@ class Servidor:
             self.removerDaListaDeChamadas(
                 data['idTurma'])
             resposta = 'Chamada Fechada'
-            horaAtual = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-            conexao.sendall(str.encode(resposta + ' Horario: ' + horaAtual +
+            dataAtual = self.getDataAtual()
+            horaAtual = self.getHoraAtual()
+            conexao.sendall(str.encode('\n ' + resposta + '\n Data: '+ dataAtual + '\n Horario: ' + horaAtual +
                                        ' \n Lista de alunos presentes: ' + str(chamada['listaPresenca'])))
 
         elif not chamadaExiste and data['acao'] == 'iniciar':
             chamadaNova = {'idTurma': data['idTurma'], 'listaPresenca': []}
             self.listaDeChamadas.append(chamadaNova)
-            resposta = 'Chamada Iniciada'
-            horaAtual = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            resposta = ' Chamada Iniciada'
+            dataAtual = self.getDataAtual()
+            horaAtual = self.getHoraAtual()
             conexao.sendall(str.encode(
-                resposta + ' Horario: ' + horaAtual))
+                ' \n' + resposta + '\n Data: '+ dataAtual + '\n Horario: ' + horaAtual))
 
         elif not chamadaExiste and data['acao'] == 'fechar':
             resposta = 'A chamada não foi aberta, ou já foi finalizada'
@@ -82,14 +95,16 @@ class Servidor:
         if chamadaExiste:
             self.marcarPresenca(data)
             resposta = 'Marcação feita com sucesso'
-            horaAtual = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-            conexao.sendall(str.encode(resposta + ' Turma: ' +
-                                       data['idTurma'] + ' Horario: ' + horaAtual))
+            dataAtual = self.getDataAtual()
+            horaAtual = self.getHoraAtual()
+            conexao.sendall(str.encode('\n '+ resposta + '\n Turma: ' +
+                                       data['idTurma'] + '\n Data: ' + dataAtual +'\n Horario: ' + horaAtual))
         else:
             resposta = 'Marcação não realizada'
-            horaAtual = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-            conexao.sendall(str.encode(resposta + ' Turma: 0 '
-                                       + ' Horario: ' + horaAtual))
+            dataAtual = self.getDataAtual()
+            horaAtual = self.getHoraAtual()
+            conexao.sendall(str.encode('\n ' + resposta + '\n Turma: 0 '
+                                       + '\n Data: ' + dataAtual + '\n Horario: ' + horaAtual))
 
     def iniciar(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

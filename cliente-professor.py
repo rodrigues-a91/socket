@@ -17,4 +17,4 @@ s.connect((HOST, PORT))
 s.sendall(bytes(data, encoding='utf-8'))
 dataResposta = s.recv(1024)
 
-print('Mensagem ecoada: ',dataResposta.decode())
+print(dataResposta.decode())
